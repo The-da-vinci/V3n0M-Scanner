@@ -14,16 +14,55 @@ try:
     import socks
     import requests
     import zipfile
+    import toxin
     from glob import glob
     from pathlib import Path
     from datetime import datetime
-    import toxin
+    from tempfile import mkdtemp
+    from subprocess import call
 
 except Exception as verb:
     print(
-        """You're missing %s, you can probably install it
-             using python3 -m pip install %s" % verb, verb"""
+        "You're missing %s, you can probably install it using python3 -m pip install %s"
+        % verb,
+        verb,
     )
+
+
+# Colours
+White = "\033[0m"
+Red = "\033[31m"
+Green = "\033[32m"
+Orange = "\033[33m"
+Blue = "\033[34m"
+
+list_count = 0
+lfi_count = 0
+subprocess.call("clear", shell=True)
+arg_end = "--"
+arg_eva = "+"
+colMax = 60  # Change this at your will
+endsub = 1
+gets = 0
+file = "/etc/passwd"
+ProxyEnabled = False
+menu = True
+current_version = str("425  ")
+
+d0rk = [line.strip() for line in open("lists/d0rks", "r", encoding="utf-8")]
+header = [line.strip() for line in open("lists/header", "r", encoding="utf-8")]
+xsses = [line.strip() for line in open("lists/xsses", "r", encoding="utf-8")]
+lfis = [
+    line.strip() for line in open("lists/pathtotest_huge.txt", "r", encoding="utf-8")
+]
+tables = [line.strip() for line in open("lists/tables", "r", encoding="utf-8")]
+columns = [line.strip() for line in open("lists/columns", "r", encoding="utf-8")]
+search_Ignore = str(
+    line.strip() for line in open("lists/search_ignore", "r", encoding="utf-8")
+)
+random.shuffle(d0rk)
+random.shuffle(header)
+random.shuffle(lfis)
 
 
 def logo():
@@ -44,8 +83,178 @@ def logo():
     print("\n")
 
 
-def killpid():
-    os.kill(os.getpid(), 9)
+def fmenu():
+
+    global customSelected
+    global vuln
+    global customlist
+    vuln = []
+    if endsub != 1:
+        vulnscan()
+    logo()
+    print("[1] Dork and Vuln Scan")
+    print("[2] Admin page finder")
+    print("[3] Toxin - Mass IP/Port/Services Vuln Scanner")
+    print("[4] DNS brute")
+    print("[5] Enable Tor/Proxy Support")
+    print("[6] Cloudflare Resolving")
+    print("[7] Misc Options")
+    print("[0] Exit\n")
+    chce = input(":")
+
+    if chce == "1":
+        fscan()
+
+    elif chce == "2":
+        afsite = input("Enter the site eg target.com: ")
+        print(Blue)
+        pwd = os.path.dirname(str(os.path.realpath(__file__)))
+        findadmin = subprocess.Popen(
+            "python3 "
+            + pwd
+            + "/modules/adminfinder.py -w lists/adminlist.txt -u "
+            + str(afsite),
+            shell=True,
+        )
+        findadmin.communicate()
+        subprocess._cleanup()
+
+    elif chce == "3":
+        print(Blue)
+        toxin.menu()
+    elif chce == "4":
+        target_site = input("Enter the site eg target.com: ")
+        print("[1] Normal Scan suitable for average sites")
+        print("[2] Scan All The Things in The Internet, this will take a long time...")
+        allthethings = input(":")
+        att = ""
+        if allthethings == "1":
+            att = str(" ")
+        elif allthethings == "2":
+            att = str("att")
+        print(Blue)
+        pwd = os.path.dirname(str(os.path.realpath(__file__)))
+        dnsbrute = subprocess.Popen(
+            "python3 "
+            + pwd
+            + "/modules/dnsbrute.py -w lists/subdomains -u "
+            + str(target_site)
+            + att
+            + " -t 200",
+            shell=True,
+        )
+        dnsbrute.communicate()
+        subprocess._cleanup()
+
+    elif chce == "5":
+        print(White)
+        enable_proxy()
+
+    elif chce == "0":
+        print(Red + "\n Exiting ...")
+        print(White)
+        sys.exit(0)
+
+    elif chce == "6":
+        cloud()
+        fmenu()
+
+    elif chce == "7":
+        print(White)
+        os.system("clear")
+        logo()
+        print("[1] Skip to custom SQLi list checking")
+        print("[2] Launch LFI Suite")
+        print("[3] Print contents of Log files")
+        print(
+            "[4] Flush Cache and Delete Logs *Warning will erase Toxin Logs/Saves aswell* "
+        )
+        print("[7] Start SQLmap *GUI MODE ONLY*")
+        print("[0] Return to main menu")
+        chce2 = input(":")
+        if chce2 == "1":
+            os.system("clear")
+            customSelected = True
+            injtest()
+        elif chce2 == "2":
+            path = os.path.dirname(str(os.path.realpath(__file__)))
+            lfisuite = subprocess.Popen("python3 " + path + "/lfisuite.py ", shell=True)
+            lfisuite.communicate()
+            subprocess._cleanup()
+        elif chce2 == "3":
+            for filename in glob("*.txt"):
+                print(filename)
+            print("Dumping output of Cache complete, Sleeping for 5 seconds")
+            time.sleep(5)
+        elif chce2 == "4":
+            try:
+                print("Checking if Cache or Logs even exist!")
+                time.sleep(1)
+                for filename in glob("*.txt"):
+                    os.remove(filename)
+                    print("Cache has been cleared, all logs have been deleted")
+                    time.sleep(2)
+            except Exception:
+                print("No Cache or Log Files to delete!")
+        elif chce2 == "7":
+            call("sudo sqlmap --wizard", shell=True)
+        elif chce2 == "0":
+            return
+
+
+def fscan():
+    global pages_pulled_as_one
+    global usearch
+    global numthreads
+    global threads
+    global finallist
+    global finallist2
+    global col
+    global darkurl
+    global sitearray
+    global loaded_Dorks
+    global sqli_confirmed
+    threads = []
+    finallist = []
+    finallist2 = []
+    col = []
+    darkurl = []
+    loaded_Dorks = []
+    print(White)
+    sites = input(
+        '\nChoose your target(domain) to force the domain restriction use for example "*.com" '
+    )
+    sitearray = [sites]
+    dorks = input(
+        "Choose the number of random dorks (0 for all.. may take awhile!)   : "
+    )
+    print("")
+    if int(dorks) == 0:
+        i = 0
+        while i < len(d0rk):
+            loaded_Dorks.append(d0rk[i])
+            i += 1
+    else:
+        i = 0
+        while i < int(dorks):
+            loaded_Dorks.append(d0rk[i])
+            i += 1
+    numthreads = input("\nEnter no. of threads, Between 50 and 500: ")
+    pages_pulled_as_one = input(
+        "Enter no. of Search Engine Pages to be scanned per d0rk,  \n"
+        " Between 25 and 100, increments of 25. Ie> 25:50:75:100   : "
+    )
+    print("\nNumber of SQL errors :", "26")
+    print("LFI payloads    :", len(lfis))
+    print("XSS payloads    :", len(xsses))
+    print("Headers         :", len(header))
+    print("Threads         :", numthreads)
+    print("Dorks           :", len(loaded_Dorks))
+    print("Pages           :", pages_pulled_as_one)
+    time.sleep(6)
+    loop = asyncio.get_event_loop()
+    usearch = loop.run_until_complete(search(pages_pulled_as_one))
+    vulnscan()
 
 
 class Injthread(threading.Thread):
@@ -103,7 +312,11 @@ def classicxss(url):
                     not re.findall(str("<OY1Py"), source)
                     and not re.findall(str("<LOY2PyTRurb1c"), source)
                 ):
-                    print(Red + "\r\x1b[K[XSS]: ", Orange + url + xss, Red + " ---> XSS Found")
+                    print(
+                        Red + "\r\x1b[K[XSS]: ",
+                        Orange + url + xss,
+                        Red + " ---> XSS Found",
+                    )
                     xss_log_file.write("\n" + url + xss)
                     vuln.append(url)
             except Exception as err:
@@ -735,66 +948,7 @@ def colfinder():
                 raise
 
 
-def fscan():
-    import time
-
-    global pages_pulled_as_one
-    global usearch
-    global numthreads
-    global threads
-    global finallist
-    global finallist2
-    global col
-    global darkurl
-    global sitearray
-    global loaded_Dorks
-    global sqli_confirmed
-    threads = []
-    finallist = []
-    finallist2 = []
-    col = []
-    darkurl = []
-    loaded_Dorks = []
-    print(White)
-    sites = input(
-        "\nChoose your target(domain) to force the domain restriction use for example \"*.com\" "
-    )
-    sitearray = [sites]
-    dorks = input(
-        "Choose the number of random dorks (0 for all.. may take awhile!)   : "
-    )
-    print("")
-    if int(dorks) == 0:
-        i = 0
-        while i < len(d0rk):
-            loaded_Dorks.append(d0rk[i])
-            i += 1
-    else:
-        i = 0
-        while i < int(dorks):
-            loaded_Dorks.append(d0rk[i])
-            i += 1
-    numthreads = input("\nEnter no. of threads, Between 50 and 500: ")
-    pages_pulled_as_one = input(
-        "Enter no. of Search Engine Pages to be scanned per d0rk,  \n"
-        " Between 25 and 100, increments of 25. Ie> 25:50:75:100   : "
-    )
-    print("\nNumber of SQL errors :", "26")
-    print("LFI payloads    :", len(lfis))
-    print("XSS payloads    :", len(xsses))
-    print("Headers         :", len(header))
-    print("Threads         :", numthreads)
-    print("Dorks           :", len(loaded_Dorks))
-    print("Pages           :", pages_pulled_as_one)
-    time.sleep(6)
-    loop = asyncio.get_event_loop()
-    usearch = loop.run_until_complete(search(pages_pulled_as_one))
-    vulnscan()
-
-
 def cloud():
-    import time
-
     logo()
     target_site = input("Enter the site eg target.com: \n")
     print(Blue)
@@ -941,8 +1095,6 @@ def ignoringGet(url):
 
 
 def CreateTempFolder(self):
-    from tempfile import mkdtemp
-
     self.temp = mkdtemp(prefix="v3n0m")
     if not self.temp.endswith(os.sep):
         self.temp += os.sep
@@ -1097,154 +1249,14 @@ async def search(pages_pulled_as_one):
                 pass
             continue
     print(
-        "[+] URLS (sorted)  : Trash, Duplicates, Dead-Links and other rubbish removed ",
-        len(finallist),
+        "[+] URLS (sorted)  : Trash, Duplicates,"
+        + "Dead-Links and other rubbish removed "
+        + len(finallist)
     )
     return finallist
 
 
-def fmenu():
-    import time
-
-    global customSelected
-    global vuln
-    global customlist
-    vuln = []
-    if endsub != 1:
-        vulnscan()
-    logo()
-    print("[1] Dork and Vuln Scan")
-    print("[2] Admin page finder")
-    print("[3] Toxin - Mass IP/Port/Services Vuln Scanner *Not Released Yet* ")
-    print("[4] DNS brute")
-    print("[5] Enable Tor/Proxy Support")
-    print("[6] Cloudflare Resolving")
-    print("[7] Misc Options")
-    print("[0] Exit\n")
-    chce = input(":")
-
-    if chce == "1":
-        print(White)
-        fscan()
-
-    elif chce == "2":
-        afsite = input("Enter the site eg target.com: ")
-        print(Blue)
-        pwd = os.path.dirname(str(os.path.realpath(__file__)))
-        findadmin = subprocess.Popen(
-            "python3 "
-            + pwd
-            + "/modules/adminfinder.py -w lists/adminlist.txt -u "
-            + str(afsite),
-            shell=True,
-        )
-        findadmin.communicate()
-        subprocess._cleanup()
-
-    elif chce == "3":
-        print(Blue)
-        toxin.menu()
-    elif chce == "4":
-        target_site = input("Enter the site eg target.com: ")
-        print("[1] Normal Scan suitable for average sites")
-        print("[2] Scan All The Things in The Internet, this will take a long time...")
-        allthethings = input(":")
-        att = ""
-        if allthethings == "1":
-            att = str(" ")
-        elif allthethings == "2":
-            att = str("att")
-        print(Blue)
-        pwd = os.path.dirname(str(os.path.realpath(__file__)))
-        dnsbrute = subprocess.Popen(
-            "python3 "
-            + pwd
-            + "/modules/dnsbrute.py -w lists/subdomains -u "
-            + str(target_site)
-            + att
-            + " -t 200",
-            shell=True,
-        )
-        dnsbrute.communicate()
-        subprocess._cleanup()
-
-    elif chce == "5":
-        print(White)
-        enable_proxy()
-
-    elif chce == "0":
-        print(Red + "\n Exiting ...")
-        print(White)
-        sys.exit(0)
-
-    elif chce == "6":
-        cloud()
-        fmenu()
-
-    elif chce == "7":
-        print(White)
-        os.system("clear")
-        logo()
-        print("[1] Skip to custom SQLi list checking")
-        print("[2] Launch LFI Suite")
-        print("[3] Print contents of Log files")
-        print(
-            "[4] Flush Cache and Delete Logs *Warning will erase Toxin Logs/Saves aswell* "
-        )
-        print("[7] Start SQLmap *GUI MODE ONLY*")
-        print("[0] Return to main menu")
-        chce2 = input(":")
-        if chce2 == "1":
-            os.system("clear")
-            customSelected = True
-            injtest()
-        elif chce2 == "2":
-            path = os.path.dirname(str(os.path.realpath(__file__)))
-            lfisuite = subprocess.Popen("python3 " + path + "/lfisuite.py ", shell=True)
-            lfisuite.communicate()
-            subprocess._cleanup()
-        elif chce2 == "3":
-            for filename in glob("*.txt"):
-                print(filename)
-            print("Dumping output of Cache complete, Sleeping for 5 seconds")
-            time.sleep(5)
-        elif chce2 == "4":
-            try:
-                print("Checking if Cache or Logs even exist!")
-                time.sleep(1)
-                for filename in glob("*.txt"):
-                    os.remove(filename)
-                    print("Cache has been cleared, all logs have been deleted")
-                    time.sleep(2)
-            except Exception:
-                print("No Cache or Log Files to delete!")
-        elif chce2 == "7":
-            from subprocess import call
-
-            call("sudo sqlmap --wizard", shell=True)
-        elif chce2 == "0":
-            fmenu()
-
-
-d0rk = [line.strip() for line in open("lists/d0rks", "r", encoding="utf-8")]
-header = [line.strip() for line in open("lists/header", "r", encoding="utf-8")]
-xsses = [line.strip() for line in open("lists/xsses", "r", encoding="utf-8")]
-lfis = [
-    line.strip() for line in open("lists/pathtotest_huge.txt", "r", encoding="utf-8")
-]
-tables = [line.strip() for line in open("lists/tables", "r", encoding="utf-8")]
-columns = [line.strip() for line in open("lists/columns", "r", encoding="utf-8")]
-search_Ignore = str(
-    line.strip() for line in open("lists/search_ignore", "r", encoding="utf-8")
-)
-random.shuffle(d0rk)
-random.shuffle(header)
-random.shuffle(lfis)
-
-
 def enable_proxy():
-    import time
-
     global ProxyEnabled
     try:
         requiresID = bool(
@@ -1254,11 +1266,11 @@ def enable_proxy():
         )
         print(requiresID)
         print("Please select Proxy Type - Options = socks4, socks5  : ")
-        proxytype = input(str())
-        print(" Please enter Proxy IP address - ie. 127.0.0.66  :")
-        proxyip = input(int)
-        print(" Please enter Proxy Port - ie. 1076  :")
-        proxyport = input(int)
+        proxytype = str(input())
+        print(" Please enter Proxy IP address - ie. 127.0.0.1(localhost)  :")
+        proxyip = str(input())
+        print(" Please enter Proxy Port - ie. 9001(tor)  :")
+        proxyport = int(input())
         if proxytype == str("socks4"):
             if requiresID:
                 try:
@@ -1298,9 +1310,9 @@ def enable_proxy():
                     )
                     print(" Socks 5 Proxy Support Enabled")
                     socks.socket = socks.socksocket
-                    ProxyEnabled = str("True ")
+                    ProxyEnabled = str("True")
                 except Exception as verb:
-                    print(str(verb))
+                    print(verb)
                     time.sleep(5)
                     pass
             else:
@@ -1308,21 +1320,13 @@ def enable_proxy():
                     socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxyip, proxyport)
                     socks.socket = socks.socksocket
                     print(" Socks 5 Proxy Support Enabled")
-                    ProxyEnabled = str("True ")
+                    ProxyEnabled = str("True")
                 except Exception as verb:
-                    print(str(verb))
+                    print(verb)
                     time.sleep(5)
                     pass
     except Exception:
         pass
-
-
-# Colours
-White = "\033[0m"
-Red = "\033[31m"
-Green = "\033[32m"
-Orange = "\033[33m"
-Blue = "\033[34m"
 
 
 def cache_Check():
@@ -1364,17 +1368,6 @@ def lfi_list_counter():
         lfi_count = 0
 
 
-list_count = 0
-lfi_count = 0
-subprocess.call("clear", shell=True)
-arg_end = "--"
-arg_eva = "+"
-colMax = 60  # Change this at your will
-endsub = 1
-gets = 0
-file = "/etc/passwd"
-ProxyEnabled = False
-menu = True
-current_version = str("425  ")
-while True:
-    fmenu()
+if __name__ == "__main__":
+    while True:
+        fmenu()
