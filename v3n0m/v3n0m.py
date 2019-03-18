@@ -22,11 +22,7 @@ try:
     from subprocess import call
 
 except Exception as verb:
-    print(
-        "You're missing %s, you can probably install it using python3 -m pip install %s"
-        % verb,
-        verb,
-    )
+    print("You're missing %s, you can probably install it using python3 -m pip install %s" % verb, verb)
 
 
 # Colours
