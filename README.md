@@ -3,9 +3,9 @@
 + Please check the programs donatations options in the Misc options, every small donation helps keep this project alive and active.
 
 Current Version: Release 426
-[Live Project - Python3]
+[Live Project - Python 3]
 
-V3n0M is a free and open source scanner. Evolved from baltazar's scanner, it has adapted several new features that improve fuctionality and usability. It is __mostly__ experimental software.
+V3n0M is a free and open source scanner. Evolved from baltazar's scanner, it has adapted several new features that improve fuctionality and usability.
 
 This program is for finding and executing various vulnerabilities. It scavenges the web using dorks and organizes the URLs it finds.
 **Use at your own risk.**
@@ -37,7 +37,7 @@ This program is for finding and executing various vulnerabilities. It scavenges 
 Note for Ubuntu users: Please make sure you have installed --> 
 `sudo apt-get install python3-bs4` and `apt-get install python3-setuptools`
 
-                       Otherwise you may get Syntax Error stopping the program from running.
+                          Otherwise you may get Syntax Error stopping the program from running.
 
 Note for Kali users: Please make sure you have installed --> `apt-get install python3-dev apt-get install python-dev`
 
@@ -60,7 +60,7 @@ $ cd V3n0M-Scanner/
 Then install it:
 
 ```
-$ python3 setup.py install --user
+$ python3 setup.py install
 ```
 
 ## Contact Information:
@@ -73,8 +73,3 @@ $ python3 setup.py install --user
     -D35m0nd142 for allowing Collaboration and the use of LFI Suite within V3n0M
     -b4ltazar & all members of darkc0de.com for inspiring the project with darkd0rk3r
     -NovaCygni for most of the code in this program
-
-
-
-
-====================================

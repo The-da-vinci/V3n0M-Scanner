@@ -2,7 +2,6 @@
 # This file is part of v3n0m
 # See LICENSE for license details.
 
-# !/usr/bin/python
 
 # import http.cookiejar
 
@@ -10,19 +9,11 @@ import http.client
 import queue
 import subprocess
 import time
+import socket
 from argparse import ArgumentParser
-from os import getpid, kill
-from signal import SIGINT, signal
-from socket import *
 from sys import argv, stdout
 from threading import Thread, Lock
-
-
-def killpid(signum=0, frame=0):
-    print("\r\x1b[K")
-    os.kill(getpid(), 9)
-
-signal(SIGINT, killpid)
+import httplib2
 
 
 class myThread(Thread):
@@ -48,16 +39,16 @@ class Timer:
         if minutes > 0:
             if hours > 0:
                 print(" [*] Time elapsed " + str(hours) + " hours, " + str(minutes) + " minutes and " + str(
-                        seconds) + " seconds at " + str(round(len(adminlist) / taken, 2)) + " lookups per second.")
+                      seconds) + " seconds at " + str(round(len(adminlist) / taken, 2)) + " lookups per second.")
             else:
                 print(" [*] Time elapsed " + str(minutes) + " minutes and " + str(seconds) + " seconds at " + str(
-                        round(len(adminlist) / taken, 2)) + " lookups per second.")
+                      round(len(adminlist) / taken, 2)) + " lookups per second.")
         else:
             print(" [*] Time elapsed " + str(seconds) + " seconds at " + str(
-                    round(len(adminlist) / taken, 2)) + " lookups per second.")
+                  round(len(adminlist) / taken, 2)) + " lookups per second.")
         maked = "rm -rf .cache_httplib"
         process = subprocess.Popen(maked.split(), stdout=subprocess.PIPE)
-        poutput = process.communicate()[0]
+        output = process.communicate()[0]
 
 
 class Printer:
@@ -110,11 +101,6 @@ def getresponse(threadName, q):
             queueLock.release()
 
 
-def killpid(signum=0, frame=0):
-    print("\r\x1b[K")
-    kill(getpid(), 9)
-
-
 parser = ArgumentParser(prog='adminfinder', usage='adminfinder [options]')
 parser.add_argument('-u', "--url", type=str, help='url eg. target.com')
 parser.add_argument("-w", "--wordlist", type=str, help="wordlist")
@@ -123,21 +109,17 @@ parser.add_argument('-f', "--follow", action="store_true", help='follow and reso
 parser.add_argument('-b', "--forbidden", action="store_true", help='show forbidden pages')
 args = parser.parse_args()
 
-print('''           _           _        __ _           _
+print('''
+           _           _        __ _           _
   __ _  __| |_ __ ___ (_)_ __  / _(_)_ __   __| | ___ _ __
  / _` |/ _` | '_ ` _ \| | '_ \| |_| | '_ \ / _` |/ _ \ '__|
 | (_| | (_| | | | | | | | | | |  _| | | | | (_| |  __/ |
  \__,_|\__,_|_| |_| |_|_|_| |_|_| |_|_| |_|\__,_|\___|_|
-             Python3 Recode: By NovaCygni
+             Python3 Recode: By NovaCygni''')
 
-                                          By d4rkcat
-''')
-
-if len(argv) == 1:
+if len(argv) >= 1:
     parser.print_help()
     exit()
-
-import http.client, httplib2
 
 domain = args.url
 url = str(domain.strip())

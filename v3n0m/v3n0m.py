@@ -22,7 +22,11 @@ try:
     from subprocess import call
 
 except Exception as verb:
-    print("You're missing %s, you can probably install it using python3 -m pip install %s" % verb, verb)
+    print(
+        "You're missing %s, you can probably install it using python3 -m pip install %s"
+        % verb,
+        verb,
+    )
 
 
 # Colours
@@ -48,14 +52,10 @@ current_version = str("425  ")
 d0rk = [line.strip() for line in open("lists/d0rks", "r", encoding="utf-8")]
 header = [line.strip() for line in open("lists/header", "r", encoding="utf-8")]
 xsses = [line.strip() for line in open("lists/xsses", "r", encoding="utf-8")]
-lfis = [
-    line.strip() for line in open("lists/pathtotest_huge.txt", "r", encoding="utf-8")
-]
+lfis = [line.strip() for line in open("lists/pathtotest_huge.txt", "r", encoding="utf-8")]
 tables = [line.strip() for line in open("lists/tables", "r", encoding="utf-8")]
 columns = [line.strip() for line in open("lists/columns", "r", encoding="utf-8")]
-search_Ignore = str(
-    line.strip() for line in open("lists/search_ignore", "r", encoding="utf-8")
-)
+search_Ignore = str(line.strip() for line in open("lists/search_ignore", "r", encoding="utf-8"))
 random.shuffle(d0rk)
 random.shuffle(header)
 random.shuffle(lfis)
@@ -80,7 +80,6 @@ def logo():
 
 
 def fmenu():
-
     global customSelected
     global vuln
     global customlist
@@ -105,16 +104,10 @@ def fmenu():
         afsite = input("Enter the site eg target.com: ")
         print(Blue)
         pwd = os.path.dirname(str(os.path.realpath(__file__)))
-        findadmin = subprocess.Popen(
-            "python3 "
-            + pwd
-            + "/modules/adminfinder.py -w lists/adminlist.txt -u "
-            + str(afsite),
-            shell=True,
-        )
+        findadmin = subprocess.Popen("python3 " + pwd + "/modules/adminfinder.py -w lists/adminlist.txt -u "
+                                     + str(afsite), shell=True,)
         findadmin.communicate()
         subprocess._cleanup()
-
     elif chce == "3":
         print(Blue)
         toxin.menu()
