@@ -2,13 +2,8 @@
 + All bug reports are appreciated, some features havnt been tested yet due to lack of free time.
 + Please check the programs donatations options in the Misc options, every small donation helps keep this project alive and active.
 
-Current Version: Release 425
-![v3n0m Scanner](http://i.imgur.com/A96CipT.png "V3n0M-Scanner")
-![Example of SQLi Dorker](https://github.com/v3n0m-Scanner/V3n0M-Scanner/blob/master/src/AnimatedDemo.gif?raw=true "Example of Dorker Features")
-
-
-
-[Live Project - Python3.6]
+Current Version: Release 426
+[Live Project - Python3]
 
 V3n0M is a free and open source scanner. Evolved from baltazar's scanner, it has adapted several new features that improve fuctionality and usability. It is __mostly__ experimental software.
 
@@ -23,9 +18,9 @@ This program is for finding and executing various vulnerabilities. It scavenges 
 + SQL Injection Vuln Scanner[SQLi]
 + Extremely Large D0rk Target Lists
 + AdminPage Finding
-+ Toxin [Vulnerable FTPs Scanner] [To Be Released Soon]
++ Toxin [Vulnerable FTPs Scanner]
 + DNS BruteForcer
-+ Python 3.6 Asyncio based scanning
++ Python 3 Asyncio based scanning
 
 ## What You Hold:
 
@@ -36,9 +31,8 @@ This program is for finding and executing various vulnerabilities. It scavenges 
 + Largest and most powerful d0rker online, 14k+d0rks searched over ~ Engines at once.
 + Free and Open /src/
 + CrossPlatform Python based toolkit
-+ Release 425 Released on 18th Febuary 2018
++ Release 426 Released on 18th March 2019
 + Licensed under GPLv3
-+ Tested on: ArchLinux 4.14, Ubuntu, Debian, Kali, MacOS, BlackArch, Manjaro/ArchLinux ARM Ed. Android-Termux
 
 Note for Ubuntu users: Please make sure you have installed --> 
 `sudo apt-get install python3-bs4` and `apt-get install python3-setuptools`
@@ -55,7 +49,7 @@ Note for Kali users: Please make sure you have installed --> `apt-get install py
 Clone the repository:
 
 ```
-$ git clone https://github.com/v3n0m-Scanner/V3n0M-Scanner.git
+$ git clone https://github.com/The-da-vinci/V3n0M-Scanner.git
 ```
 
 Then go inside:
@@ -78,11 +72,9 @@ $ python3 setup.py install --user
     -SageHack for allowing Cloudbuster to be adapted for use within V3n0M
     -D35m0nd142 for allowing Collaboration and the use of LFI Suite within V3n0M
     -b4ltazar & all members of darkc0de.com for inspiring the project with darkd0rk3r
+    -NovaCygni for most of the code in this program
 
 
 
 
 ====================================
-
-##Make Love and Smoke Trees...
-
