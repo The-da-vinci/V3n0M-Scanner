@@ -1,32 +1,23 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
-try:
-    import modules
-    import re
-    import random
-    import threading
-    import socket
-    import urllib
-    import subprocess
-    import time
-    import sys
-    import os
-    import asyncio
-    import requests
-    import zipfile
-    import toxin
-    from glob import glob
-    from pathlib import Path
-    from datetime import datetime
-    from tempfile import mkdtemp
-    from subprocess import call
-
-except Exception as verb:
-    print(
-        "You're missing %s, you can probably install it using python3 -m pip install %s"
-        % verb,
-        verb,
-    )
+from modules import socks
+import re
+import random
+import threading
+import socket
+import urllib
+import subprocess
+import time
+import sys
+import os
+import asyncio
+import requests
+import zipfile
+import toxin
+from glob import glob
+from pathlib import Path
+from datetime import datetime
+from tempfile import mkdtemp
 
 
 # Colours
@@ -52,9 +43,9 @@ vuln_to = ['MySQL Classic', 'MiscError', 'MiscError2', 'Oracle', 'JDBC_CFM', 'JD
 
 list_count = 0
 lfi_count = 0
-subprocess.call("clear", shell=True)
 arg_end = "--"
 arg_eva = "+"
+call = subprocess.call()
 colMax = 60  # Change this at your will
 endsub = 1
 gets = 0
@@ -62,7 +53,6 @@ file = "/etc/passwd"
 ProxyEnabled = False
 menu = True
 current_version = str("426")
-socks = modules.socks
 
 
 d0rk = [line.strip() for line in open("lists/d0rks", "r", encoding="utf-8")]
@@ -95,6 +85,18 @@ def logo():
     print("\n")
 
 
+def main():
+    while True:
+        try:
+            fmenu()
+        except KeyboardInterrupt:
+            sure = bool(input("Are you sure you want to exit? (y/n)"))
+            if sure is True:
+                exit()
+            else:
+                return 0
+
+
 def fmenu():
     global customSelected
     global vuln
@@ -116,16 +118,16 @@ def fmenu():
     if chce == "1":
         fscan()
 
-    elif chce == "2":
+    elif chce == "2":  # gotta fix this shit
         afsite = input("Enter the site eg target.com: ")
         pwd = os.path.dirname(str(os.path.realpath(__file__)))
         findadmin = subprocess.Popen("python3 " + pwd + "/modules/adminfinder.py -w lists/adminlist.txt -u "
                                      + str(afsite), shell=True,)
         findadmin.communicate()
         subprocess._cleanup()
-    elif chce == "3":
+    elif chce == "3":  # this shit has actually been done right
         toxin.menu()
-    elif chce == "4":
+    elif chce == "4":  # ew fuck who the fuck thought this was a good idea
         target_site = input("Enter the site eg target.com: ")
         print("[1] Normal Scan suitable for average sites")
         print("[2] Scan All The Things in The Internet, this will take a long time...")
@@ -152,7 +154,7 @@ def fmenu():
         enable_proxy()
 
     elif chce == "0":
-        print(Red + "\n Exiting ...")
+        print("\n Exiting ...")
         sys.exit(0)
 
     elif chce == "6":
@@ -175,7 +177,7 @@ def fmenu():
             os.system("clear")
             customSelected = True
             injtest()
-        elif chce2 == "2":
+        elif chce2 == "2":  # and this...
             path = os.path.dirname(str(os.path.realpath(__file__)))
             lfisuite = subprocess.Popen("python3 " + path + "/lfisuite.py ", shell=True)
             lfisuite.communicate()
@@ -183,8 +185,8 @@ def fmenu():
         elif chce2 == "3":
             for filename in glob("*.txt"):
                 print(filename)
-            print("Dumping output of Cache complete, Sleeping for 5 seconds")
-            time.sleep(5)
+            print("Dumping output of Cache complete")
+            return
         elif chce2 == "4":
             try:
                 print("Checking if Cache or Logs even exist!")
@@ -192,10 +194,10 @@ def fmenu():
                 for filename in glob("*.txt"):
                     os.remove(filename)
                     print("Cache has been cleared, all logs have been deleted")
-                    time.sleep(2)
+                    return
             except Exception:
                 print("No Cache or Log Files to delete!")
-        elif chce2 == "7":
+        elif chce2 == "7":  # why? gotta decide whether to remove or keep this shit
             call("sudo sqlmap --wizard", shell=True)
         elif chce2 == "0":
             return
@@ -220,24 +222,26 @@ def fscan():
     darkurl = []
     loaded_Dorks = []
     print(White)
-    sites = input(
-        '\nChoose your target(domain) to force the domain restriction use for example "*.com" '
-    )
+    sites = input('\nChoose your target(domain) to force the domain restriction use for example "*.com" ')
     sitearray = [sites]
     dorks = input(
         "Choose the number of random dorks (0 for all.. may take awhile!)   : "
     )
     print("")
-    if int(dorks) == 0:
-        i = 0
-        while i < len(d0rk):
-            loaded_Dorks.append(d0rk[i])
-            i += 1
-    else:
-        i = 0
-        while i < int(dorks):
-            loaded_Dorks.append(d0rk[i])
-            i += 1
+    try:
+        if int(dorks) == 0:
+            i = 0
+            while i < len(d0rk):
+                loaded_Dorks.append(d0rk[i])
+                i += 1
+        else:
+            i = 0
+            while i < int(dorks):
+                loaded_Dorks.append(d0rk[i])
+                i += 1
+    except Exception as err:
+        print(err)
+        return
     numthreads = input("\nEnter no. of threads, Between 50 and 500: ")
     pages_pulled_as_one = input(
         "Enter no. of Search Engine Pages to be scanned per d0rk,  \n"
@@ -312,9 +316,9 @@ def classicxss(url):
                     and not re.findall(str("<LOY2PyTRurb1c"), source)
                 ):
                     print(
-                        Red + "\r\x1b[K[XSS]: ",
-                        Orange + url + xss,
-                        Red + " ---> XSS Found",
+                        "\r\x1b[K[XSS]: ",
+                        url + xss,
+                        " ---> XSS Found",
                     )
                     xss_log_file.write("\n" + url + xss)
                     vuln.append(url)
@@ -651,7 +655,7 @@ def colfinder():
                 raise
 
 
-def cloud():
+def cloud():  # gotta fix this shit
     logo()
     target_site = input("Enter the site eg target.com: \n")
     print(Blue)
@@ -674,18 +678,6 @@ def cloud():
     subprocess._cleanup()
     print("Cloud Resolving Finished")
     time.sleep(6)
-
-
-def det_Neph():
-    print("")
-
-
-def det_Honeyd():
-    print("")
-
-
-def det_Kippo():
-    print("")
 
 
 def vulnscan():
@@ -720,15 +712,7 @@ def vulnscan():
         os.system("clear")
         vuln = []
         injtest()
-        print(
-            Blue
-            + "\r\x1b[K [*] Scan complete, "
-            + Orange
-            + str(len(col))
-            + Blue
-            + " vuln sites found."
-        )
-        print()
+        print("\r\x1b[K [*] Scan complete, " + str(len(col)) + " vuln sites found.\r\n")
     elif chce == "2":
         os.system("clear")
         vuln = []
@@ -904,7 +888,6 @@ async def search(pages_pulled_as_one):
                     "| Collected urls: %s Since start of scan \r\n"
                     " | D0rks: %s/%s Progressed so far \r\n"
                     " | Percent Done: %s \r\n"
-                    " | Current page no.: <%s> in Cycles of 25 Pages of results pulled in Asyncio\r\n"
                     " | Dork In Progress: %s\r\n"
                     " | Elapsed Time: %s\r\n"
                     % (
@@ -913,7 +896,6 @@ async def search(pages_pulled_as_one):
                         progress,
                         totalprogress,
                         repr(percent),
-                        repr(page),
                         dork,
                         "%s:%s:%s" % (hours, minutes, seconds),
                     )
@@ -963,10 +945,8 @@ def enable_proxy():
     global ProxyEnabled
     try:
         requiresID = bool(
-            input(
-                "Requires Username/Password? Leave Blank if not required, otherwise type y/yes/true/True  :"
-            )
-        )
+            input("Requires Username/Password?"
+                  "Leave Blank if not required, otherwise type y/yes/true/True  :"))
         print(requiresID)
         print("Please select Proxy Type - Options = socks4, socks5  : ")
         proxytype = str(input())
@@ -1072,5 +1052,5 @@ def lfi_list_counter():
 
 
 if __name__ == "__main__":
-    while True:
-        fmenu()
+    print('hello')
+    main()

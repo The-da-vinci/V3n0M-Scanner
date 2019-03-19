@@ -1,7 +1,1 @@
-# __init__.py
-
-import adminfinder
-import dnsbrute
-import socks
-import X-Strike
-import nc
+__ALL__ = ["adminfinder", "dnsbrute", "nc", "socks", "xstrike"]
