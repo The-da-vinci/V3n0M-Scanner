@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 try:
+    import modules
     import re
     import random
     import threading
@@ -11,7 +12,6 @@ try:
     import sys
     import os
     import asyncio
-    import socks
     import requests
     import zipfile
     import toxin
@@ -36,6 +36,20 @@ Green = "\033[32m"
 Orange = "\033[33m"
 Blue = "\033[34m"
 
+vuln_list = ['error in your SQL syntax', 'mysql_fetch', 'num_rows', 'ORA-01756', 'Error Executing Database Query',
+             'SQLServer JDBC Driver', 'OLE DB Provider for SQL Server', 'Unclosed quotation mark',
+             'ODBC Microsoft Access Driver', 'Microsoft JET Database', 'Error Occurred While Processing Request',
+             'Microsoft JET Database', 'Server Error', 'ODBC Drivers error', 'Invalid Querystring',
+             'OLE DB Provider for ODBC', 'VBScript Runtime', 'ADODB.Field', 'BOF or EOF', 'ADODB.Command',
+             'JET Database', 'mysql_fetch_array', 'Syntax error', 'mysql_numrows()', 'GetArray()', 'FetchRow()',
+             'Input string was not in a correct format']
+
+vuln_to = ['MySQL Classic', 'MiscError', 'MiscError2', 'Oracle', 'JDBC_CFM', 'JDBC_CFM2', 'MSSQL_OLEdb', 'MSSQL_Uqm',
+           'MS-Access_ODBC', 'MS-Access_JETdb', 'Processing Request', 'MS-Access JetDb', 'Server Error',
+           'ODBC Drivers error', 'Invalid Querystring', 'OLE DB Provider for ODBC', 'VBScript Runtime',
+           'ADODB.Field', 'BOF or EOF', 'ADODB.Command', 'JET Database', 'mysql_fetch_array', 'Syntax error',
+           'mysql_numrows()', 'GetArray()', 'FetchRow()', 'Input String Error']
+
 list_count = 0
 lfi_count = 0
 subprocess.call("clear", shell=True)
@@ -47,7 +61,9 @@ gets = 0
 file = "/etc/passwd"
 ProxyEnabled = False
 menu = True
-current_version = str("425  ")
+current_version = str("426")
+socks = modules.socks
+
 
 d0rk = [line.strip() for line in open("lists/d0rks", "r", encoding="utf-8")]
 header = [line.strip() for line in open("lists/header", "r", encoding="utf-8")]
@@ -102,14 +118,12 @@ def fmenu():
 
     elif chce == "2":
         afsite = input("Enter the site eg target.com: ")
-        print(Blue)
         pwd = os.path.dirname(str(os.path.realpath(__file__)))
         findadmin = subprocess.Popen("python3 " + pwd + "/modules/adminfinder.py -w lists/adminlist.txt -u "
                                      + str(afsite), shell=True,)
         findadmin.communicate()
         subprocess._cleanup()
     elif chce == "3":
-        print(Blue)
         toxin.menu()
     elif chce == "4":
         target_site = input("Enter the site eg target.com: ")
@@ -121,7 +135,6 @@ def fmenu():
             att = str(" ")
         elif allthethings == "2":
             att = str("att")
-        print(Blue)
         pwd = os.path.dirname(str(os.path.realpath(__file__)))
         dnsbrute = subprocess.Popen(
             "python3 "
@@ -136,12 +149,10 @@ def fmenu():
         subprocess._cleanup()
 
     elif chce == "5":
-        print(White)
         enable_proxy()
 
     elif chce == "0":
         print(Red + "\n Exiting ...")
-        print(White)
         sys.exit(0)
 
     elif chce == "6":
@@ -149,7 +160,6 @@ def fmenu():
         fmenu()
 
     elif chce == "7":
-        print(White)
         os.system("clear")
         logo()
         print("[1] Skip to custom SQLi list checking")
@@ -233,7 +243,7 @@ def fscan():
         "Enter no. of Search Engine Pages to be scanned per d0rk,  \n"
         " Between 25 and 100, increments of 25. Ie> 25:50:75:100   : "
     )
-    print("\nNumber of SQL errors :", "26")
+    print("\nNumber of SQL errors :", len(sql_count))
     print("LFI payloads    :", len(lfis))
     print("XSS payloads    :", len(xsses))
     print("Headers         :", len(header))
@@ -354,232 +364,17 @@ def classicinj(url):
             resp = str("v3n0m")
             # to throw a value to stop null/non-200-status messages hanging the scanner
         hits = str(resp.read())
-        if str("error in your SQL syntax") in hits:
-            print(url + " is vulnerable --> MySQL Classic")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("mysql_fetch") in hits:
-            print(url + " is Vulnerable --> MiscError")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("num_rows") in hits:
-            print(url + " is Vulnerable --> MiscError2")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("ORA-01756") in hits:
-            print(url + " is Vulnerable --> Oracle")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("Error Executing Database Query") in hits:
-            print(url + " is Vulnerable --> JDBC_CFM")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("SQLServer JDBC Driver") in hits:
-            print(url + " is Vulnerable --> JDBC_CFM2")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("OLE DB Provider for SQL Server") in hits:
-            print(url + " is Vulnerable --> MSSQL_OLEdb")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("Unclosed quotation mark") in hits:
-            print(url + " is Vulnerabe --> MSSQL_Uqm")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("ODBC Microsoft Access Driver") in hits:
-            print(url + " is Vulnerable --> MS-Access_ODBC")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("Microsoft JET Database") in hits:
-            print(url + " is Vulnerable --> MS-Access_JETdb")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("Error Occurred While Processing Request") in hits:
-            print(url + " is Vulnerable --> Processing Request")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("Microsoft JET Database") in hits:
-            print(url + " is Vulnerable --> MS-Access JetDb")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("Error Occurred While Processing Request") in hits:
-            print(url + " is Vulnerable --> Processing Request ")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("Server Error") in hits:
-            print(url + " is Vulnerable --> Server Error")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("ODBC Drivers error") in hits:
-            print(url + " is Vulnerable --> ODBC Drivers error")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("Invalid Querystring") in hits:
-            print(url + " is Vulnerable --> Invalid Querystring")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("OLE DB Provider for ODBC") in hits:
-            print(url + " is Vulnerable --> OLE DB Provider for ODBC")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("VBScript Runtime") in hits:
-            print(url + " is Vulnerable --> VBScript Runtime")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("ADODB.Field") in hits:
-            print(url + " is Vulnerable --> ADODB.Field")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("BOF or EOF") in hits:
-            print(url + " is Vulnerable --> BOF or EOF")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("ADODB.Command") in hits:
-            print(url + " is Vulnerable --> ADODB.Command")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("JET Database") in hits:
-            print(url + " is Vulnerable --> JET Database")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("mysql_fetch_array") in hits:
-            print(url + " is Vulnerabe --> mysql_fetch_array")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("Syntax error") in hits:
-            print(url + " is Vulnerable --> Syntax error")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("mysql_numrows()") in hits:
-            print(url + " is Vulnerable --> mysql_numrows()")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("GetArray()") in hits:
-            print(url + " is Vulnerable --> GetArray()")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("FetchRow()") in hits:
-            print(url + " is Vulnerable --> FetchRow()")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        elif str("Input string was not in a correct format") in hits:
-            print(url + " is Vulnerable --> Input String Error")
-            logfile.write("\n" + aug_url)
-            vuln.append(hits)
-            col.append(hits)
-            sql_list_count += 1
-            sqli_confirmed.write("\n" + aug_url)
-            pass
-        else:
-            pass
+        d = dict((error, vulnerability) for error, vulnerability in zip(vuln_list, vuln_to))
+        for error in d:
+            if error in hits:
+                print(url + " is vulnerable to " + d[error])
+                logfile.write("\n" + aug_url)
+                vuln.append(hits)
+                col.append(hits)
+                sql_list_count += 1
+                sqli_confirmed.write("\n" + aug_url)
+            else:
+                pass
     except:
         pass
 
@@ -636,97 +431,16 @@ def injtest():
                     try:
                         resp = urllib.request.urlopen(hold_door, timeout=2)
                         hits = str(resp.read())
-                    except:  # In event of Exception throw pointless str so scan at least just continues.
-                        hits = "0"
-                    if str("error in your SQL syntax") in hits:
-                        print(hold_the_door + " is vulnerable --> MySQL Classic")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("mysql_fetch") in hits:
-                        print(hold_the_door + " is Vulnerable --> MiscError")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("num_rows") in hits:
-                        print(hold_the_door + " is Vulnerable --> MiscError2")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("ORA-01756") in hits:
-                        print(hold_the_door + " is Vulnerable --> Oracle")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("Error Executing Database Query") in hits:
-                        print(hold_the_door + " is Vulnerable --> JDBC_CFM")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("SQLServer JDBC Driver") in hits:
-                        print(hold_the_door + " is Vulnerable --> JDBC_CFM2")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("OLE DB Provider for SQL Server") in hits:
-                        print(hold_the_door + " is Vulnerable --> MSSQL_OLEdb")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("Unclosed quotation mark") in hits:
-                        print(hold_the_door + " is Vulnerabe --> MSSQL_Uqm")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("ODBC Microsoft Access Driver") in hits:
-                        print(hold_the_door + " is Vulnerable --> MS-Access_ODBC")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("Microsoft JET Database") in hits:
-                        print(hold_the_door + " is Vulnerable --> MS-Access_JETdb")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("Error Occurred While Processing Request") in hits:
-                        print(hold_the_door + " is Vulnerable --> Processing Request")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("Microsoft JET Database") in hits:
-                        print(hold_the_door + " is Vulnerable --> MS-Access JetDb")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("Error Occurred While Processing Request") in hits:
-                        print(hold_the_door + " is Vulnerable --> Processing Request ")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("Server Error") in hits:
-                        print(hold_the_door + " is Vulnerable --> Server Error")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("ODBC Drivers error") in hits:
-                        print(hold_the_door + " is Vulnerable --> ODBC Drivers error")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("Invalid Querystring") in hits:
-                        print(hold_the_door + " is Vulnerable --> Invalid Querystring")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("OLE DB Provider for ODBC") in hits:
-                        print(
-                            hold_the_door
-                            + " is Vulnerable --> OLE DB Provider for ODBC"
-                        )
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("VBScript Runtime") in hits:
-                        print(hold_the_door + " is Vulnerable --> VBScript Runtime")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("ADODB.Field") in hits:
-                        print(hold_the_door + " is Vulnerable --> ADODB.Field")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("BOF or EOF") in hits:
-                        print(hold_the_door + " is Vulnerable --> BOF or EOF")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("ADODB.Command") in hits:
-                        print(hold_the_door + " is Vulnerable --> ADODB.Command")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("JET Database") in hits:
-                        print(hold_the_door + " is Vulnerable --> JET Database")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("mysql_fetch_array") in hits:
-                        print(hold_the_door + " is Vulnerabe --> mysql_fetch_array")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("Syntax error") in hits:
-                        print(hold_the_door + " is Vulnerable --> Syntax error")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("mysql_numrows()") in hits:
-                        print(hold_the_door + " is Vulnerable --> mysql_numrows()")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("GetArray()") in hits:
-                        print(hold_the_door + " is Vulnerable --> GetArray()")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("FetchRow()") in hits:
-                        print(hold_the_door + " is Vulnerable --> FetchRow()")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    if str("Input string was not in a correct format") in hits:
-                        print(hold_the_door + " is Vulnerable --> Input String Error")
-                        sqli_confirmed.write("\n" + hold_the_door)
-                    else:
-                        pass
+                    except Exception as err:  # so the program doesn't crash
+                        print(err)
+                        hits = 'v3n0m'
+                    d = dict((error, vulnerability) for error, vulnerability in zip(vuln_list, vuln_to))
+                    for error in d:
+                        if error in hits:
+                            print(hold_the_door + " is vulnerable to" + d[error])
+                            sqli_confirmed.write("\n" + hold_the_door)
+                        else:
+                            pass
         except FileNotFoundError or Exception as verb:
             print("Target file not found!")
             print(str(verb))
@@ -1186,15 +900,15 @@ async def search(pages_pulled_as_one):
                 sys.stdout.flush()
                 logo()
                 sys.stdout.write(
-                    White + "\r\x1b[K " + Red + "| Domain: <%s> Has been targeted \n "
-                    "| Collected urls: %s Since start of scan \n"
-                    " | D0rks: %s/%s Progressed so far \n"
-                    " | Percent Done: %s \n"
-                    " | Current page no.: <%s> in Cycles of 25 Pages of results pulled in Asyncio\n"
-                    " | Dork In Progress: %s\n"
-                    " | Elapsed Time: %s\n"
+                    "\r\n[K  | Domain: <%s> Has been targeted \r\n "
+                    "| Collected urls: %s Since start of scan \r\n"
+                    " | D0rks: %s/%s Progressed so far \r\n"
+                    " | Percent Done: %s \r\n"
+                    " | Current page no.: <%s> in Cycles of 25 Pages of results pulled in Asyncio\r\n"
+                    " | Dork In Progress: %s\r\n"
+                    " | Elapsed Time: %s\r\n"
                     % (
-                        Red + site,
+                        site,
                         repr(urls_len),
                         progress,
                         totalprogress,
