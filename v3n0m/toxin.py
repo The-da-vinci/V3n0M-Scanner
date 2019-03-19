@@ -18,9 +18,9 @@ try:
     from sys import argv, stdout
     from random import randint
 
-except:
-    exit()
-
+except Exception as err:
+    print(err)
+    raise
 
 def killpid(signum=0, frame=0):
     print("\r\x1b[K")

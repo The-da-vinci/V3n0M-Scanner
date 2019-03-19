@@ -13,7 +13,7 @@ import os
 import asyncio
 import requests
 import zipfile
-import toxin
+# import toxin
 from glob import glob
 from pathlib import Path
 from datetime import datetime
@@ -45,26 +45,29 @@ list_count = 0
 lfi_count = 0
 arg_end = "--"
 arg_eva = "+"
-call = subprocess.call()
+call = subprocess.call("", shell=True)
 colMax = 60  # Change this at your will
 endsub = 1
 gets = 0
 file = "/etc/passwd"
 ProxyEnabled = False
 menu = True
-current_version = str("426")
+current_version = str("5.0")
 
-
-d0rk = [line.strip() for line in open("lists/d0rks", "r", encoding="utf-8")]
-header = [line.strip() for line in open("lists/header", "r", encoding="utf-8")]
-xsses = [line.strip() for line in open("lists/xsses", "r", encoding="utf-8")]
-lfis = [line.strip() for line in open("lists/pathtotest_huge.txt", "r", encoding="utf-8")]
-tables = [line.strip() for line in open("lists/tables", "r", encoding="utf-8")]
-columns = [line.strip() for line in open("lists/columns", "r", encoding="utf-8")]
-search_Ignore = str(line.strip() for line in open("lists/search_ignore", "r", encoding="utf-8"))
-random.shuffle(d0rk)
-random.shuffle(header)
-random.shuffle(lfis)
+try:
+    d0rk = [line.strip() for line in open("lists/d0rks", "r", encoding="utf-8")]
+    header = [line.strip() for line in open("lists/header", "r", encoding="utf-8")]
+    xsses = [line.strip() for line in open("lists/xsses", "r", encoding="utf-8")]
+    lfis = [line.strip() for line in open("lists/pathtotest_huge.txt", "r", encoding="utf-8")]
+    tables = [line.strip() for line in open("lists/tables", "r", encoding="utf-8")]
+    columns = [line.strip() for line in open("lists/columns", "r", encoding="utf-8")]
+    search_Ignore = str(line.strip() for line in open("lists/search_ignore", "r", encoding="utf-8"))
+    random.shuffle(d0rk)
+    random.shuffle(header)
+    random.shuffle(lfis)
+except Exception as err:
+    print(err)
+    exit()
 
 
 def logo():
@@ -76,9 +79,9 @@ def logo():
     print("( (   ) )  (___ ( | (\ \) || (/ /) || |(_)| |")
     print(" \ \_/ /       ) \| | \   ||   / | || |   | |")
     print("  \   /  /\___/  /| )  \  ||  (__) || )   ( |")
-    print("   \_/   \______/ |/    )_)(_______)|/     \| v." + current_version)
+    print("   \_/   \______/ |/    )_)(_______)|/     \| v " + current_version)
     print("                                              by Da-vinci")
-    print("         Proxy Enabled " + " [" + ProxyEnabled + "] ")
+    print("         Proxy Enabled " + " [", ProxyEnabled, "] ")
     print("         Cache & Log Status " " [", cachestatus, "] ")
     print("         Vulnerable URL count:" "[", sql_count, "]")
     print("---------------------------------------------------")
@@ -98,6 +101,8 @@ def main():
 
 
 def fmenu():
+    sql_list_counter()
+    cache_Check()
     global customSelected
     global vuln
     global customlist
@@ -126,7 +131,8 @@ def fmenu():
         findadmin.communicate()
         subprocess._cleanup()
     elif chce == "3":  # this shit has actually been done right
-        toxin.menu()
+        # toxin.menu()
+        return
     elif chce == "4":  # ew fuck who the fuck thought this was a good idea
         target_site = input("Enter the site eg target.com: ")
         print("[1] Normal Scan suitable for average sites")
@@ -190,7 +196,6 @@ def fmenu():
         elif chce2 == "4":
             try:
                 print("Checking if Cache or Logs even exist!")
-                time.sleep(1)
                 for filename in glob("*.txt"):
                     os.remove(filename)
                     print("Cache has been cleared, all logs have been deleted")
