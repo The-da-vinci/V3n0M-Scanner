@@ -85,7 +85,7 @@ def logo():
     print("         Cache & Log Status " " [", cachestatus, "] ")
     print("         Vulnerable URL count:" "[", sql_count, "]")
     print("---------------------------------------------------")
-    print("\n")
+    print("\r\n")
 
 
 def main():
@@ -226,13 +226,10 @@ def fscan():
     col = []
     darkurl = []
     loaded_Dorks = []
-    print(White)
     sites = input('\nChoose your target(domain) to force the domain restriction use for example "*.com" ')
     sitearray = [sites]
-    dorks = input(
-        "Choose the number of random dorks (0 for all.. may take awhile!)   : "
-    )
-    print("")
+    dorks = input("Choose the number of random dorks (0 for all.. may take awhile!) : ")
+    print("\r\n")
     try:
         if int(dorks) == 0:
             i = 0
@@ -941,7 +938,7 @@ async def search(pages_pulled_as_one):
     print(
         "[+] URLS (sorted)  : Trash, Duplicates,"
         + "Dead-Links and other rubbish removed "
-        + len(finallist)
+        + str(len(finallist))
     )
     return finallist
 
@@ -1041,9 +1038,10 @@ def sql_list_counter():
     try:
         f = open("v3n0m-sqli.txt", encoding="utf-8")
         li = [x for x in f.readlines() if x != "\n"]
+        print(len(li))
         sql_count = len(li)
     except FileNotFoundError:
-        sql_count = 0
+        sql_count = ''
 
 
 def lfi_list_counter():
